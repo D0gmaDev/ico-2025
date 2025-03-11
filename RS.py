@@ -1,7 +1,5 @@
 import numpy as np
 import random
-import matplotlib.pyplot as plt
-import networkx as nx
 
 from ico import *
 
@@ -19,7 +17,7 @@ state = {
 distance_matrix = compute_distance_matrix(state)
 
 # Initial solution
-solution = [0, 1, 2, 3, 0, 4, 5, 6, 0, 7, 8, 0, 9, 10, 11, 12, 0]  # Returns to depot
+solution = [0, 1, 2, 3, 0, 4, 5, 6, 0, 7, 8, 9, 10, 11, 12, 0]  # Returns to depot
 
 def mutate(solution):
     new_solution = solution.copy()
@@ -90,44 +88,4 @@ best_solution, best_fitness = RS(state, solution, distance_matrix)
 print("Meilleure solution trouvée:", best_solution)
 print("Meilleure fitness:", best_fitness)
 
-def plot(state, solution):
-    plt.figure(figsize=(8, 8))
-
-    # Extraire les coordonnées
-    pos = state["position"]
-
-    # Tracer les points
-    for i, (x, y) in enumerate(pos):
-        if i == 0:
-            plt.scatter(0, 0, color='black', s=100)  # Point 0 en noir
-        else:
-            plt.scatter(x, y, color='white', edgecolors='black', s=100)
-            plt.text(x, y+.1, str(i), fontsize=12, color='red')
-
-    # Tracer les lignes pour chaque véhicule
-    colors = ['blue', 'green', 'red', 'purple']
-
-    # Split solutions by vehicle
-    vehicles = []
-    current_vehicle = [0]
-
-    for node in solution:
-        current_vehicle.append(node)
-        if node == 0:
-            vehicles.append(current_vehicle)
-            current_vehicle = [0]
-            
-    if current_vehicle:
-        vehicles.append(current_vehicle)
-
-    for i, route in enumerate(vehicles):
-        for j in range(len(route) - 1):
-            (x1, y1), (x2, y2) = pos[route[j]], pos[route[j + 1]]
-            plt.plot([x1, x2], [y1, y2], color=colors[i])
-
-    # Affichage du titre et du graphique
-    plt.title(f"Recuit Simulé (fitness = {best_fitness:.2f})")
-    plt.axis('off')  # Masquer les axes
-    plt.show()
-
-plot(state, best_solution)
+plot_solution(state, best_solution)
