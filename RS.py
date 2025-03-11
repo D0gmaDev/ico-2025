@@ -3,118 +3,131 @@ import random
 import matplotlib.pyplot as plt
 import networkx as nx
 
-    
-coords = {
-    0: (250, 250),
-    1: (490, 315),  2: (277, 196), 3: (141, 385), 4: (301, 355),
-    5: (111, 304), 6: (69, 140), 7: (418, 213), 8: (281, 79),
-    9: (361, 129), 10: (347, 273), 11: (400, 340), 12: (300, 300)}
+from ico import *
 
-routes = {
-    "Véhicule 1": [0, 1, 2, 0],  
-    "Véhicule 2": [0, 3, 4, 5, 6, 0], 
-    "Véhicule 3": [0, 7, 8, 9, 10, 0],  
-    "Véhicule 4": [0, 11, 12, 0]  
+state = {
+    "position": [
+        (0, 0),  # Depot (0)
+        (5, 2), (3, -3), (2, 2), (1, 0),  # Customers (1-4)
+        (3, 3), (2, 1), (-5, 0), (7, 1),  # Customers (5-8)
+        (-3, -2), (5, 1), (1, 2), (4, 2)  # Customers (9-12)
+    ],
+    "orders": [0, 5, 10, 7, 8, 6, 9, 4, 3, 1, 2, 3, 7]  # Order demand per customer (0 is depot)
 }
 
-def distance(p1, p2):
-    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+# Compute the distance matrix
+distance_matrix = compute_distance_matrix(state)
 
-def total_distance(routes):
-    total_dist = 0  # Initialisation de total_dist à 0
-    for route in routes.values():
-        for i in range(len(route) - 1):
-            total_dist += distance(coords[route[i]], coords[route[i + 1]])
-        total_dist += distance(coords[route[-1]], coords[route[0]])  # Retour au point de départ
-    return total_dist
+# Initial solution
+solution = [0, 1, 2, 3, 0, 4, 5, 6, 0, 7, 8, 0, 9, 10, 11, 12, 0]  # Returns to depot
 
-def mutate(routes):
-    vehicle_1, vehicle_2 = random.sample(list(routes.keys()), 2)
-    
-    # Choisir deux points au hasard dans ces véhicules
-    if len(routes[vehicle_1]) > 1 and len(routes[vehicle_2]) > 1:
-        idx_1 = random.randint(1, len(routes[vehicle_1]) - 2)
-        idx_2 = random.randint(1, len(routes[vehicle_2]) - 2)
-        
-        # Effectuer l'échange
-        routes[vehicle_1][idx_1], routes[vehicle_2][idx_2] = routes[vehicle_2][idx_2], routes[vehicle_1][idx_1]
-    return routes
+def mutate(solution):
+    new_solution = solution.copy()
 
-def RS(routes):
+    if random.random() < 0.7:
+        # Swap two random points
+        i, j = random.sample(range(0, len(new_solution)), 2)
+        new_solution[i], new_solution[j] = new_solution[j], new_solution[i]
+    elif random.random() < 0.5:
+        # Add a 0 somewhere in the middle
+        i = random.randint(1, len(new_solution) - 1)
+        new_solution.insert(i, 0)
+    else:
+        zero_indices = [i for i, val in enumerate(new_solution) if val == 0]
+        if zero_indices:  # Ensure there's at least one 0
+            random_index = random.choice(zero_indices)  # Pick a random 0 index
+            del new_solution[random_index]
+
+    return new_solution
+
+def RS(state, initial_solution, distance_matrix, iterations=200):
     # Initialisation
-    current_routes = routes.copy()
-    current_distance = total_distance(current_routes)
+    current_solution = initial_solution.copy()
+    current_fitness = fitness(state, current_solution, distance_matrix)
     
-    best_routes = current_routes.copy()
-    best_distance = current_distance
+    best_solution = current_solution.copy()
+    best_fitness = current_fitness
     
     # Paramètres du recuit simulé
     T = 1000  # Température initiale
     T_min = 0.1  # Température minimale
     alpha = 0.99  # Facteur de refroidissement
-    iterations = 1000  # Nombre d'itérations
     
     # Exécution du recuit simulé
     while T > T_min:
         for _ in range(iterations):
-            new_routes = mutate(current_routes.copy())
-            new_distance = total_distance(new_routes)
+            new_solution = mutate(current_solution)
+            new_fitness = fitness(state, new_solution, distance_matrix)
             
             # Si la nouvelle solution est meilleure, l'accepter
-            if new_distance < current_distance:
-                current_routes = new_routes
-                current_distance = new_distance
+            if new_fitness < current_fitness:
+                current_solution = new_solution
+                current_fitness = new_fitness
+
                 # Mettre à jour la meilleure solution
-                if current_distance < best_distance:
-                    best_routes = current_routes.copy()
-                    best_distance = current_distance
+                if current_fitness < best_fitness:
+                    best_solution = current_solution.copy()
+                    best_fitness = current_fitness
             # Sinon, l'accepter avec une certaine probabilité
             else:
-                delta = new_distance - current_distance
+                delta = new_fitness - current_fitness
                 probability = np.exp(-delta / T)
                 if random.random() < probability:
-                    current_routes = new_routes
-                    current_distance = new_distance
+                    current_solution = new_solution
+                    current_fitness = new_fitness
         
         T *= alpha  # Réduire la température
 
-    return best_routes, best_distance
-
-best_routes, best_distance = RS(routes)
-print("Meilleur chemin:", best_routes)  # Correction ici
-print("Meilleure distance:", best_distance)
+    return best_solution, best_fitness
 
 
-def plot(coords, best_routes):
-    """
-    Affiche le meilleur chemin trouvé pour plusieurs véhicules.
-    
-    :param coords: Dictionnaire des coordonnées des points
-    :param best_routes: Dictionnaire représentant les routes de chaque véhicule
-    """
+print("Initial solution:", solution)
+print("Initial fitness:", fitness(state, solution, distance_matrix))
+
+print("=" * 20)
+
+best_solution, best_fitness = RS(state, solution, distance_matrix)
+print("Meilleure solution trouvée:", best_solution)
+print("Meilleure fitness:", best_fitness)
+
+def plot(state, solution):
     plt.figure(figsize=(8, 8))
 
+    # Extraire les coordonnées
+    pos = state["position"]
+
     # Tracer les points
-    for point in coords:
-        if point == 0:
-            plt.scatter(coords[point][0], coords[point][1], color='black', s=100)  # Point 0 en noir
+    for i, (x, y) in enumerate(pos):
+        if i == 0:
+            plt.scatter(0, 0, color='black', s=100)  # Point 0 en noir
         else:
-            plt.scatter(coords[point][0], coords[point][1], color='white', edgecolors='black', s=100)
-            plt.text(coords[point][0] + 5, coords[point][1] + 5, str(point), fontsize=12, color='black')
+            plt.scatter(x, y, color='white', edgecolors='black', s=100)
+            plt.text(x, y+.1, str(i), fontsize=12, color='red')
 
     # Tracer les lignes pour chaque véhicule
     colors = ['blue', 'green', 'red', 'purple']
-    for i, (vehicle, route) in enumerate(best_routes.items()):
+
+    # Split solutions by vehicle
+    vehicles = []
+    current_vehicle = [0]
+
+    for node in solution:
+        current_vehicle.append(node)
+        if node == 0:
+            vehicles.append(current_vehicle)
+            current_vehicle = [0]
+            
+    if current_vehicle:
+        vehicles.append(current_vehicle)
+
+    for i, route in enumerate(vehicles):
         for j in range(len(route) - 1):
-            p1, p2 = route[j], route[j + 1]
-            plt.plot([coords[p1][0], coords[p2][0]], [coords[p1][1], coords[p2][1]], color=colors[i])
-        # Relier le dernier point au premier
-        plt.plot([coords[route[-1]][0], coords[route[0]][0]], 
-                 [coords[route[-1]][1], coords[route[0]][1]], color=colors[i])
+            (x1, y1), (x2, y2) = pos[route[j]], pos[route[j + 1]]
+            plt.plot([x1, x2], [y1, y2], color=colors[i])
 
     # Affichage du titre et du graphique
-    plt.title("Recuit Simulé - Meilleurs Chemins (Multiples Véhicules)")
+    plt.title(f"Recuit Simulé (fitness = {best_fitness:.2f})")
     plt.axis('off')  # Masquer les axes
     plt.show()
 
-plot(coords, best_routes)
+plot(state, best_solution)
