@@ -41,6 +41,10 @@ def fitness(state, solution, distance_matrix):
     if len(delivered) < len(orders) - 1:  # Excluding depot
         penalty_count += 5 * (len(orders) - 1 - len(delivered))  # Some orders were not delivered
 
+    # Ensure the path starts and ends at the depot
+    if solution[0] != 0 or solution[-1] != 0:
+        penalty_count += 2  # Route does not start/end at depot
+
     # Final fitness score: total distance + trucks + penalty
     
     print(trucks)
