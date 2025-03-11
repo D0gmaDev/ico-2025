@@ -46,9 +46,6 @@ def fitness(state, solution, distance_matrix):
         penalty_count += 2  # Route does not start/end at depot
 
     # Final fitness score: total distance + trucks + penalty
-    
-    print(trucks)
-
     trucks_value = trucks * omega
     penalty_value = penalty_count * penalty_factor
     return total_distance + trucks_value + penalty_value
