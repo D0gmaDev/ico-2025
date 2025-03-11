@@ -20,14 +20,14 @@ def fitness(state, solution, distance_matrix):
         
         # Check if the path exists
         if distance_matrix[prev, curr] == float("inf"):
-            penalty_count += 3  # Path does not exist
+            penalty_count += 6  # Path does not exist
 
         total_distance += distance_matrix[prev, curr]
         
         # If we're at a customer, deliver their order
         if curr != 0:  
             if capacity < orders[curr]:
-                penalty_count += 1  # Not enough capacity
+                penalty_count += (orders[curr] - capacity + 1) // 2  # Not enough capacity
             
             capacity -= orders[curr]
             delivered.add(curr)
@@ -39,7 +39,7 @@ def fitness(state, solution, distance_matrix):
 
     # Ensure all orders are delivered
     if len(delivered) < len(orders) - 1:  # Excluding depot
-        penalty_count += 2  # Some orders were not delivered
+        penalty_count += 5 * (len(orders) - 1 - len(delivered))  # Some orders were not delivered
 
     # Final fitness score: total distance + trucks + penalty
     
