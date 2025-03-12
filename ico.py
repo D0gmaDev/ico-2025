@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-q = 30 # Truck capacity
-omega = 50 # Truck cost
+q = 400 # Truck capacity
+omega = 10 # Truck cost
 
 def fitness(state, solution, distance_matrix):
     orders = state["orders"]
@@ -71,13 +71,13 @@ def plot_solution(state, solution):
     # Tracer les points
     for i, (x, y) in enumerate(pos):
         if i == 0:
-            plt.scatter(0, 0, color='black', s=100)  # Point 0 en noir
+            plt.scatter(x, y, color='black', s=100)  # Point 0 en noir
         else:
             plt.scatter(x, y, color='white', edgecolors='black', s=100)
-            plt.text(x, y+.1, str(i), fontsize=12, color='red')
+            #plt.text(x, y, str(i), fontsize=6, color='red')
 
     # Tracer les lignes pour chaque véhicule
-    colors = ['blue', 'green', 'red', 'purple']
+    colors = ['blue', 'green', 'red', 'purple', 'orange', 'brown', 'pink', 'gray', 'olive', 'cyan', 'magenta', 'yellow']
 
     # Split solutions by vehicle
     vehicles = []
@@ -95,7 +95,7 @@ def plot_solution(state, solution):
     for i, route in enumerate(vehicles):
         for j in range(len(route) - 1):
             (x1, y1), (x2, y2) = pos[route[j]], pos[route[j + 1]]
-            plt.plot([x1, x2], [y1, y2], color=colors[i])
+            plt.plot([x1, x2], [y1, y2], color=colors[i % len(colors)])
 
     # Affichage du titre et du graphique
     plt.title("Solution : " + ", ".join(map(str, solution)))
