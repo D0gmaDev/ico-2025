@@ -15,7 +15,8 @@ state = {
 distance_matrix = compute_distance_matrix(state)
 
 # Initial solution
-solution = [0, 1, 2, 3, 0, 4, 5, 6, 0, 7, 8, 9, 10, 11, 12, 0]  # Returns to depot
+solution = [0, 9, 7, 0, 2, 0, 4, 6, 10, 8, 1, 12, 5, 3, 11, 0]  # Returns to depot
 
 # Compute the fitness of the initial solution
 print(fitness(state, solution, distance_matrix))
+plot_solution(state, solution)

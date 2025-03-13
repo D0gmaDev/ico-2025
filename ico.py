@@ -98,6 +98,6 @@ def plot_solution(state, solution):
             plt.plot([x1, x2], [y1, y2], color=colors[i % len(colors)])
 
     # Affichage du titre et du graphique
-    plt.title("Solution : " + ", ".join(map(str, solution)))
+    plt.title("Solution")
     plt.axis('off')  # Masquer les axes
     plt.show()
