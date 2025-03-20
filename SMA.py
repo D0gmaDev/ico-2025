@@ -40,7 +40,7 @@ class AG_Agent(Agent):
         self.start_solution = self.model.solution_pool[random.randint(0, len(self.model.solution_pool) - 1)]
         self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
 
-        self.solution, self.fitness = AG(self.model.state, self.start_solution, self.model.distance_matrix, iterations=50)
+        self.solution, self.fitness = AG(self.model.state, self.solution_pool[:9], self.model.distance_matrix, iterations=50, population_size=120, mutation_rate=0.2)
 
     def advance(self):
         if self.fitness <= self.start_fitness:
