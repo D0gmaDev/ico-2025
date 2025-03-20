@@ -28,6 +28,24 @@ class RSAgent(Agent):
         if self.fitness <= self.start_fitness:
             self.model.solution_pool.append(self.solution)
 
+class AG_Agent(Agent):
+
+    def __init__(self, model):
+        super().__init__(model)
+        self.solution = None
+        self.fitness = None
+
+    def step(self):
+        print(f"start AG_agent {self.unique_id}")
+        self.start_solution = self.model.solution_pool[random.randint(0, len(self.model.solution_pool) - 1)]
+        self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
+
+        self.solution, self.fitness = AG(self.model.state, self.start_solution, self.model.distance_matrix, iterations=50)
+
+    def advance(self):
+        if self.fitness <= self.start_fitness:
+            self.model.solution_pool.append(self.solution)
+
 class VRPModel(Model):
 
     def __init__(self, state, distance_matrix, initial_solutions):
