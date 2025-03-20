@@ -3,19 +3,6 @@ import random
 
 from ico import *
 
-from load_database import load_data
-
-state = load_data()
-
-# Compute the distance matrix
-distance_matrix = compute_distance_matrix(state)
-
-# Initial solution
-# solution = [0, 1, 2, 3, 0, 4, 5, 6, 0, 7, 8, 9, 10, 11, 12, 0]  # Returns to depot
-
-# Random solution
-solution = [0] + random.sample(range(1, len(state["position"])), len(state["position"]) - 1) + [0]
-
 def mutate(solution):
     new_solution = solution.copy()
 
@@ -69,15 +56,3 @@ def RS(state, initial_solution, distance_matrix, iterations=200, T = 1000, T_min
         T *= alpha  # Réduire la température
 
     return best_solution, best_fitness
-
-
-print("Initial solution:", solution)
-print("Initial fitness:", fitness(state, solution, distance_matrix))
-
-print("=" * 20)
-
-best_solution, best_fitness = RS(state, solution, distance_matrix)
-print("Meilleure solution trouvée:", best_solution)
-print("Meilleure fitness:", best_fitness)
-
-plot_solution(state, best_solution)

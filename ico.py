@@ -68,7 +68,7 @@ def plot_solution(state, solution):
     # Extraire les coordonnées
     pos = state["position"]
 
-    # Tracer les points
+    # Tracer les pointsP
     for i, (x, y) in enumerate(pos):
         if i == 0:
             plt.scatter(x, y, color='black', s=100)  # Point 0 en noir
