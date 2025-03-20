@@ -40,13 +40,12 @@ def is_valid_solution(solution, orders, capacity):
     return True
 
 
-def tabu_search(state, initial_solution, max_iter=100, tabu_tenure=5, neighborhood_size=20):
-    distance_matrix = compute_distance_matrix(state)
+def tabu_search(state, initial_solution, distance_matrix, iterations=500, tabu_tenure=7, neighborhood_size=25):
     best_solution = initial_solution
     best_cost = fitness(state, best_solution, distance_matrix)
     tabu_list = []
     
-    for iteration in range(max_iter):
+    for _ in range(iterations):
         neighborhood = []
 
         # Générer un sous-ensemble de voisins avec des swaps

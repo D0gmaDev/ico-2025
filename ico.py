@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 q = 400 # Truck capacity
 omega = 10 # Truck cost
@@ -20,8 +21,8 @@ def fitness(state, solution, distance_matrix):
         prev, curr = solution[i-1], solution[i]
         
         # Check if the path exists
-        if distance_matrix[prev, curr] == float("inf"):
-            penalty_count += 6  # Path does not exist
+        # if distance_matrix[prev, curr] == float("inf"):
+        #    penalty_count += 6  # Path does not exist
 
         total_distance += distance_matrix[prev, curr]
         
@@ -101,3 +102,30 @@ def plot_solution(state, solution):
     plt.title("Solution")
     plt.axis('off')  # Masquer les axes
     plt.show()
+
+def construct_initial_solutions(state, N):
+    """
+    Génère un pool de N solutions initiales en variant l'ordre des clients et les moments de retour au dépôt.
+    """
+    orders = state["orders"]
+    clients = list(range(1, len(orders)))  # Exclure le dépôt (id=0)
+    solutions = []
+
+    for _ in range(N):
+        random.shuffle(clients)  # Mélanger les clients
+        solution = [0]  # Commence au dépôt
+        current_load = 0
+
+        for client_id in clients:
+            if current_load + orders[client_id] > q or random.random() < 0.01:  # 1% de chance de retourner plus tôt
+                solution.append(0)  # Retour au dépôt
+                current_load = 0  # Réinitialiser la charge
+
+            solution.append(client_id)
+            current_load += orders[client_id]
+
+        solution.append(0)  # Retour final au dépôt
+        solutions.append(solution)
+
+    return solutions
+    

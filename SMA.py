@@ -7,8 +7,10 @@ from ico import *
 from load_database import load_data
 
 from RS import RS
+from AG import AG
+from Tabou import tabu_search
 
-POOL_SIZE = 10
+POOL_SIZE = 20
 
 class RSAgent(Agent):
 
@@ -18,17 +20,17 @@ class RSAgent(Agent):
         self.fitness = None
 
     def step(self):
-        print(f"start agent {self.unique_id}")
-        self.start_solution = self.model.solution_pool[random.randint(0, len(self.model.solution_pool) - 1)]
+        print(f"| Start RS_agent (#{self.unique_id})")
+        self.start_solution = self.model.get_random_solution()
         self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
 
-        self.solution, self.fitness = RS(self.model.state, self.start_solution, self.model.distance_matrix, iterations=30)
+        self.solution, self.fitness = RS(self.model.state, self.start_solution, self.model.distance_matrix, iterations=100)
 
     def advance(self):
         if self.fitness <= self.start_fitness:
             self.model.solution_pool.append(self.solution)
 
-class AG_Agent(Agent):
+class AGAgent(Agent):
 
     def __init__(self, model):
         super().__init__(model)
@@ -36,11 +38,29 @@ class AG_Agent(Agent):
         self.fitness = None
 
     def step(self):
-        print(f"start AG_agent {self.unique_id}")
-        self.start_solution = self.model.solution_pool[random.randint(0, len(self.model.solution_pool) - 1)]
+        print(f"| Start AG_agent (#{self.unique_id})")
+        self.start_solution = self.model.get_random_solution()
         self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
 
-        self.solution, self.fitness = AG(self.model.state, self.solution_pool[:9], self.model.distance_matrix, iterations=50, population_size=120, mutation_rate=0.2)
+        self.solution, self.fitness = AG(self.model.state, self.model.solution_pool[:10], self.model.distance_matrix, iterations=200, population_size=120, mutation_rate=0.2, elitism=10)
+
+    def advance(self):
+        if self.fitness <= self.start_fitness:
+            self.model.solution_pool.append(self.solution)
+
+class TabouAgent(Agent):
+
+    def __init__(self, model):
+        super().__init__(model)
+        self.solution = None
+        self.fitness = None
+
+    def step(self):
+        print(f"| Start Tabou_agent (#{self.unique_id})")
+        self.start_solution = self.model.get_random_solution()
+        self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
+
+        self.solution, self.fitness = tabu_search(self.model.state, self.start_solution, self.model.distance_matrix, iterations=500)
 
     def advance(self):
         if self.fitness <= self.start_fitness:
@@ -54,6 +74,7 @@ class VRPModel(Model):
         self.distance_matrix = distance_matrix
         self.solution_pool = initial_solutions.copy()
         self.solution_pool.sort(key=lambda x: fitness(state, x, distance_matrix))
+        self.update_pool_weight()
 
         self.datacollector = DataCollector(
             agent_reporters={
@@ -62,8 +83,10 @@ class VRPModel(Model):
                 }
         )
 
-        for _ in range(3):
-            RSAgent(self)
+        # Création des agents
+        RSAgent(self)
+        AGAgent(self)
+        TabouAgent(self)
 
     def step(self):
         self.datacollector.collect(self)
@@ -73,36 +96,36 @@ class VRPModel(Model):
         self.solution_pool.sort(key=lambda x: fitness(self.state, x, self.distance_matrix))
         self.solution_pool = self.solution_pool[:POOL_SIZE]
         self.best_solution = self.solution_pool[0]
+        print(f"-- Current fitness : {fitness(self.state, self.best_solution, self.distance_matrix)}")
 
+    def update_pool_weight(self):
+        N = len(self.solution_pool)
 
-def construct_initial_solution(state):
-    """
-    Génère une solution initiale en visitant les clients dans l'ordre, avec des retours au dépôt
-    lorsque la capacité du camion est atteinte.
-    """
-    orders = state["orders"]
-    solution = [0]  # Commence au dépôt
-    current_load = 0
+        # Génération d'une distribution exponentielle des probabilités
+        weights = [0.9**i for i in range(N)]  # 0.9 peut être ajusté pour un effet plus ou moins fort
+        total_weight = sum(weights)
 
-    for client_id in range(1, len(orders)):
-        if current_load + orders[client_id] > q:  # Si la capacité est dépassée
-            solution.append(0)  # Retour au dépôt
-            current_load = 0  # Réinitialiser la charge
-        solution.append(client_id)
-        current_load += orders[client_id]
+        # Normalisation des poids pour en faire une distribution de probabilité
+        probabilities = [w / total_weight for w in weights]
+        self.pool_weights = probabilities
+    
+    def get_random_solution(self):
+        return random.choices(self.solution_pool, weights=self.pool_weights, k=1)[0]
 
-    solution.append(0)  # Retour final au dépôt
-    return solution
+    def get_random_solutions(self, n):
+        return random.choices(self.solution_pool, weights=self.pool_weights, k=n)
 
 
 state = load_data()
 distance_matrix = compute_distance_matrix(state)
-solution = construct_initial_solution(state)
+solutions = construct_initial_solutions(state, POOL_SIZE)
 
-model = VRPModel(state, distance_matrix, [solution] * POOL_SIZE)
+model = VRPModel(state, distance_matrix, solutions)
 
-for i in range(10):
-    print(f"Step {i}")
+steps = 10
+
+for i in range(steps):
+    print(f"[Step {i+1}/{steps}]")
     model.step()
 
 print(model.best_solution)

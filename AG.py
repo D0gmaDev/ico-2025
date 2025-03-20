@@ -1,13 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import random
-import pandas as pd
 
 from ico import *
 from load_database import *
-
-#q = 400      # Capacité maximale des camions
-#omega = 10  # Coût fixe par camion utilisé
 
 def crossover(parent1, parent2, nb_clients):
     size = min(len(parent1), len(parent2))
@@ -83,23 +78,19 @@ def roulette_selection(population, fitness_values):
 
 # ALGO GENETIQUE
 
-def genetic_algorithm(state, population, population_size, generations_list, mutation_rate, elitism, selection_method='tournament', mutation_method='swap'):
+def genetic_algorithm(state, population, population_size, distance_matrix, generations, mutation_rate, elitism, selection_method='tournament', mutation_method='swap'):
     global MUTATION_RATE
     MUTATION_RATE = mutation_rate
 
-    distance_matrix = compute_distance_matrix(state)
-    #population = [create_initial_solution(state) for _ in range(population_size)]
     fitness_values = np.array([fitness(state, sol, distance_matrix) for sol in population])
 
     best_solution = population[np.argmin(fitness_values)]
     best_fitness = min(fitness_values)
-    
 
     best_solutions = []
     best_fitnesss = []
 
-    for generation in range(generations_list[-1]):
-        print("Génération :", generation)
+    for _ in range(generations):
         sorted_indices = np.argsort(fitness_values)
         population = [population[i] for i in sorted_indices]
         fitness_values = fitness_values[sorted_indices]
@@ -107,9 +98,8 @@ def genetic_algorithm(state, population, population_size, generations_list, muta
         new_population = population[:elitism]
         new_fitness_values = list(fitness_values[:elitism])
         
-        if generation+1 in generations_list:
-            best_solutions.append(new_population[0])
-            best_fitnesss.append(new_fitness_values[0])
+        best_solutions.append(new_population[0])
+        best_fitnesss.append(new_fitness_values[0])
 
         while len(new_population) < population_size:
             #print(len(new_population))
@@ -127,7 +117,6 @@ def genetic_algorithm(state, population, population_size, generations_list, muta
                 new_fitness_values.append(child_fitness)
 
             if child_fitness < best_fitness:
-                #print("AMELIORATION !!!", child_fitness)
                 best_solution = child
                 best_fitness = child_fitness
 
@@ -138,13 +127,8 @@ def genetic_algorithm(state, population, population_size, generations_list, muta
 
 state = load_data()
 
-def AG(state, start_population, distance_matrix, iterations=100, population_size=120, mutation_rate=0.2):
-
-    #population = [construct_initial_solution(state) for _ in range(population_size)]
-    best_solution, best_fitness = genetic_algorithm(state, start_population, population_size, iterations, mutation_rate, elitism, selection_method='tournament', mutation_method='inversion')
-    best_solution = best_solution[0]
-
-    print("Best Solution:", best_solution)
-    print("Fitness Score:", best_fitness)
-
+def AG(state, start_population, distance_matrix, iterations=100, population_size=120, mutation_rate=0.2, elitism = 10):
+    best_solution, best_fitness = genetic_algorithm(state, start_population, population_size, distance_matrix, iterations, mutation_rate, elitism, selection_method='tournament', mutation_method='inversion')
+    best_solution = best_solution[-1]
+    best_fitness = best_fitness[-1]
     return best_solution, best_fitness
