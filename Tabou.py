@@ -44,6 +44,8 @@ def tabu_search(state, initial_solution, distance_matrix, iterations=500, tabu_t
     best_solution = initial_solution
     best_cost = fitness(state, best_solution, distance_matrix)
     tabu_list = []
+
+    q = state["q"]
     
     for _ in range(iterations):
         neighborhood = []
