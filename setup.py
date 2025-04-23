@@ -3,7 +3,7 @@ import numpy
 
 module = Extension(
     'rs_c',
-    sources=['rs.c'],
+    sources=['ico.c', 'rs.c'],
     include_dirs=[numpy.get_include()],
     extra_compile_args=['-O3'],
 )
