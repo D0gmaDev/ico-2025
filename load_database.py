@@ -27,7 +27,9 @@ def load_data(route_id=2946091):
     # Créer la structure de données
     state = {
         "position": [depot_positions[0]] + customer_positions,  # Ajouter le dépôt en premier
-        "orders": [0] + orders  # La demande du dépôt est 0
+        "orders": [0] + orders,  # La demande du dépôt est 0
+        "q" : 400, # Truck capacity
+        "omega" : 10 # Truck cost
     }
 
     return state #, distances

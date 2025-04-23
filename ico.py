@@ -2,11 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-q = 400 # Truck capacity
-omega = 10 # Truck cost
-
 def fitness(state, solution, distance_matrix):
     orders = state["orders"]
+    q = state["q"]
+    omega = state["omega"]
 
     delivered = set()
     capacity = q
@@ -108,6 +107,7 @@ def construct_initial_solutions(state, N):
     Génère un pool de N solutions initiales en variant l'ordre des clients et les moments de retour au dépôt.
     """
     orders = state["orders"]
+    q = state["q"]
     clients = list(range(1, len(orders)))  # Exclure le dépôt (id=0)
     solutions = []
 
