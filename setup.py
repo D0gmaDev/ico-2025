@@ -1,16 +1,23 @@
 from setuptools import setup, Extension
 import numpy
 
-module = Extension(
+rs_module = Extension(
     'rs_c',
     sources=['ico.c', 'rs.c'],
     include_dirs=[numpy.get_include()],
     extra_compile_args=['-O3'],
 )
 
+tabu_module = Extension(
+    'tabu',
+    sources=['ico.c', 'tabu.c'],
+    include_dirs=[numpy.get_include()],
+    extra_compile_args=['-O3'],
+)
+
 setup(
-    name='rs_c',
+    name='optimization_algorithms',
     version='1.0',
-    description='Recuit simulé en C',
-    ext_modules=[module],
+    description='Recuit simulé et Tabu Search en C',
+    ext_modules=[rs_module, tabu_module],
 )

@@ -1,8 +1,12 @@
 from ico import *
+
 from RS import RS
 from rs_c_wrapper import rs_c_optimize
+
+from Tabou import tabu_search
+from tabu_c_wrapper import tabu_c_optimize
+
 import time
-import numpy as np
 
 # Sample state with positions and orders
 state = {
@@ -47,6 +51,34 @@ print(f"  Time: {python_time:.3f} seconds")
 print(f"  Final fitness: {python_fitness:.2f}")
 print(f"  Solution: {python_solution}")
 print(f"\nC RS:")
+print(f"  Time: {c_time:.3f} seconds")
+print(f"  Final fitness: {c_fitness:.2f}")
+print(f"  Solution: {c_solution}")
+print(f"\nSpeedup: {python_time/c_time:.2f}x")
+
+# Tabou
+print("\n")
+
+iterations = 20000
+
+print("Initial solution fitness:", fitness(state, initial_solution, distance_matrix))
+print("\nRunning Python Tabou implementation...")
+start_time = time.time()
+python_solution, python_fitness = tabu_search(state, initial_solution, distance_matrix, iterations)
+python_time = time.time() - start_time
+
+print("\nRunning C Tabou implementation...")
+start_time = time.time()
+c_solution, c_fitness = tabu_c_optimize(state, initial_solution, distance_matrix, iterations)
+c_time = time.time() - start_time
+
+print("\nResults:")
+print("-" * 50)
+print(f"Python Tabou:")
+print(f"  Time: {python_time:.3f} seconds")
+print(f"  Final fitness: {python_fitness:.2f}")
+print(f"  Solution: {python_solution}")
+print(f"\nC Tabou:")
 print(f"  Time: {c_time:.3f} seconds")
 print(f"  Final fitness: {c_fitness:.2f}")
 print(f"  Solution: {c_solution}")
