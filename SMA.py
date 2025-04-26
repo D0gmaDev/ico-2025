@@ -7,10 +7,15 @@ from ico import *
 from load_database import load_data
 
 from RS import RS
+from rs_c_wrapper import rs_c_optimize
 from AG import AG
+from ag_c_wrapper import ag_c_optimize
 from Tabou import tabu_search
+from tabu_c_wrapper import tabu_c_optimize
 
-POOL_SIZE = 20
+POOL_SIZE = 30
+
+USE_C_OPTIMISATION = False
 
 class RSAgent(Agent):
 
@@ -24,7 +29,10 @@ class RSAgent(Agent):
         self.start_solution = self.model.get_random_solution()
         self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
 
-        self.solution, self.fitness = RS(self.model.state, self.start_solution, self.model.distance_matrix, iterations=100)
+        if USE_C_OPTIMISATION:
+            self.solution, self.fitness = rs_c_optimize(self.model.state, self.start_solution, self.model.distance_matrix, iterations=800)
+        else: 
+            self.solution, self.fitness = RS(self.model.state, self.start_solution, self.model.distance_matrix, iterations=100)
 
     def advance(self):
         if self.fitness <= self.start_fitness:
@@ -42,7 +50,10 @@ class AGAgent(Agent):
         self.start_solution = self.model.get_random_solution()
         self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
 
-        self.solution, self.fitness = AG(self.model.state, self.model.solution_pool[:10], self.model.distance_matrix, iterations=200, population_size=120, mutation_rate=0.2, elitism=10)
+        if USE_C_OPTIMISATION:
+            self.solution, self.fitness = ag_c_optimize(self.model.state, self.model.solution_pool[:15], self.model.distance_matrix, iterations=1000, population_size=120, mutation_rate=0.2, elitism=10)
+        else:
+            self.solution, self.fitness = AG(self.model.state, self.model.solution_pool[:10], self.model.distance_matrix, iterations=200, population_size=120, mutation_rate=0.2, elitism=10)
 
     def advance(self):
         if self.fitness <= self.start_fitness:
@@ -60,7 +71,10 @@ class TabouAgent(Agent):
         self.start_solution = self.model.get_random_solution()
         self.start_fitness = fitness(self.model.state, self.start_solution, self.model.distance_matrix)
 
-        self.solution, self.fitness = tabu_search(self.model.state, self.start_solution, self.model.distance_matrix, iterations=500)
+        if USE_C_OPTIMISATION: 
+            self.solution, self.fitness = tabu_c_optimize(self.model.state, self.start_solution, self.model.distance_matrix, iterations=5000)
+        else: 
+            self.solution, self.fitness = tabu_search(self.model.state, self.start_solution, self.model.distance_matrix, iterations=500)
 
     def advance(self):
         if self.fitness <= self.start_fitness:
@@ -122,7 +136,7 @@ solutions = construct_initial_solutions(state, POOL_SIZE)
 
 model = VRPModel(state, distance_matrix, solutions)
 
-steps = 10
+steps = 50 if USE_C_OPTIMISATION else 10
 
 for i in range(steps):
     print(f"[Step {i+1}/{steps}]")
