@@ -28,7 +28,7 @@ distance_matrix = compute_distance_matrix(state)
 initial_solution = [0, 9, 7, 0, 2, 0, 4, 6, 10, 8, 1, 12, 5, 3, 11, 0]  # Returns to depot
 
 # Parameters for both algorithms
-iterations = 200
+iterations = 5000
 T = 1000
 T_min = 0.1
 alpha = 0.99

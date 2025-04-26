@@ -15,7 +15,7 @@ lib.tabu_optimize.argtypes = [
     ctypes.c_int,  # iterations
     ctypes.c_int,  # tabu_tenure
     ctypes.c_int,  # neighborhood_size
-    ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),  # output_solution
+    ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # output_solution
     ctypes.POINTER(ctypes.c_int),  # output_length
 ]
 

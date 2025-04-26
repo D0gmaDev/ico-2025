@@ -15,9 +15,16 @@ tabu_module = Extension(
     extra_compile_args=['-O3'],
 )
 
+ag_module = Extension(
+    'ag',
+    sources=['ico.c', 'ag.c'],
+    include_dirs=[numpy.get_include()],
+    extra_compile_args=['-O3'],
+)
+
 setup(
     name='optimization_algorithms',
     version='1.0',
-    description='Recuit simulé et Tabu Search en C',
-    ext_modules=[rs_module, tabu_module],
+    description='Recuit simulé, Tabu Search et Algorithme Génétique en C',
+    ext_modules=[rs_module, tabu_module, ag_module],
 )
